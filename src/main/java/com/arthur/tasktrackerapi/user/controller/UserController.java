@@ -2,10 +2,14 @@ package com.arthur.tasktrackerapi.user.controller;
 
 import com.arthur.tasktrackerapi.user.dto.UserRequestDto;
 import com.arthur.tasktrackerapi.user.dto.UserResponseDto;
+import com.arthur.tasktrackerapi.user.entity.User;
+import com.arthur.tasktrackerapi.user.mapper.UserMapper;
 import com.arthur.tasktrackerapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +34,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserResponseDto>> findAll() {
         List<UserResponseDto> users = userService.findAll();
         return ResponseEntity.ok(users);
@@ -39,5 +44,13 @@ public class UserController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public UserResponseDto me(Authentication authentication) {
+        var email = authentication.getName();
+        var user = userService.findByEmail(email);
+
+        return UserMapper.toDto(user);
     }
 }

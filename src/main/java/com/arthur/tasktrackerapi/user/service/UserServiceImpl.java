@@ -7,6 +7,7 @@ import com.arthur.tasktrackerapi.user.entity.User;
 import com.arthur.tasktrackerapi.user.mapper.UserMapper;
 import com.arthur.tasktrackerapi.user.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,5 +53,11 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         userRepository.delete(user);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found " + email));
     }
 }

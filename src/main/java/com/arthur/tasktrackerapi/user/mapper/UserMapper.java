@@ -2,6 +2,7 @@ package com.arthur.tasktrackerapi.user.mapper;
 
 import com.arthur.tasktrackerapi.user.dto.UserRequestDto;
 import com.arthur.tasktrackerapi.user.dto.UserResponseDto;
+import com.arthur.tasktrackerapi.user.entity.Role;
 import com.arthur.tasktrackerapi.user.entity.User;
 
 public class UserMapper {
@@ -11,7 +12,7 @@ public class UserMapper {
                 .password(userRequestDto.getPassword())
                 .firstName(userRequestDto.getFirstName())
                 .lastName(userRequestDto.getLastName())
-                .role(userRequestDto.getRole())
+                .role(Role.USER)
                 .build();
     }
 

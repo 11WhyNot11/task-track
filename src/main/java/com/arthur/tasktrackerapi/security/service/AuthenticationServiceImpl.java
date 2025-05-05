@@ -61,6 +61,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(InvalidCredentialsException::new);
 
+        System.out.println("EMAIL: " + request.getEmail());
+        System.out.println("PASS RAW: " + request.getPassword());
+
+        System.out.println("PASS HASH: " + user.getPassword());
+        System.out.println("MATCHES: " + passwordEncoder.matches(request.getPassword(), user.getPassword()));
+
+
+
         var token = jwtService.generateToken(user);
         return AuthenticationResponseDto.builder()
                 .token(token)
