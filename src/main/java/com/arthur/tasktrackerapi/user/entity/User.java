@@ -1,5 +1,6 @@
 package com.arthur.tasktrackerapi.user.entity;
 
+import com.arthur.tasktrackerapi.project.entity.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -36,4 +40,7 @@ public class User {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Project> projects = new ArrayList<>();
 }

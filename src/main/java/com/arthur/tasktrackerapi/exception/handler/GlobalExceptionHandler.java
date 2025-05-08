@@ -28,5 +28,12 @@ public class GlobalExceptionHandler {
                 .body(exception.getMessage());
     }
 
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public  ResponseEntity<String> projectNotFoundException(ProjectNotFoundException exception){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exception.getMessage());
+    }
+
 
 }
