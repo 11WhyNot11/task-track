@@ -1,6 +1,7 @@
 package com.arthur.tasktrackerapi.security.filter;
 
 import com.arthur.tasktrackerapi.security.service.JwtService;
+import com.arthur.tasktrackerapi.security.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +24,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        System.out.println("PATH: " + request.getServletPath());
+        System.out.println("AUTH BEFORE: " + SecurityContextHolder.getContext().getAuthentication());
+
         final String path = request.getServletPath();
 
         if (path.startsWith("/api/auth")) {
@@ -31,31 +38,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        final String authorizationHeader = request.getHeader("Authorization");
 
-        var authorization = request.getHeader("Authorization");
-
-        if(authorization == null || !authorization.startsWith("Bearer ")){
-            filterChain.doFilter(request,response);
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        var token = authorization.substring(7);
-        var email = jwtService.extractUsername(token);
+        String token = authorizationHeader.substring(7);
+        String email = jwtService.extractUsername(token);
 
-        if(email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
             var userDetails = userDetailsService.loadUserByUsername(email);
-            if(jwtService.isTokenValid(token, userDetails)){
-                String role = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
-                var authorities = List.of(new SimpleGrantedAuthority(role));
 
-                var auth =  new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            if (jwtService.isTokenValid(token, userDetails)) {
+
+                var user = ((UserDetailsServiceImpl) userDetailsService).loadDomainUserByUsername(email);
+
+                System.out.println("EMAIL: " + user.getEmail());
+                System.out.println("ROLE: " + user.getRole());
+                System.out.println("AUTHORITIES: " + user.getAuthorities());
+                System.out.println("AUTH: " + SecurityContextHolder.getContext().getAuthentication());
+                System.out.println("PATH: " + request.getRequestURI());
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println("Setting auth: " + authentication);
             }
         }
 
         filterChain.doFilter(request, response);
-
-
     }
+
+
 }
 

@@ -31,7 +31,7 @@ public class ProjectServiceImpl implements ProjectService{
 
     @Override
     public List<ProjectResponseDto> getAllByOwner(User owner) {
-        var project = projectRepository.findAllByOwner(owner);
+        var project = projectRepository.findAllByOwnerAndArchivedFalse(owner);
 
         return project.stream()
                 .map(projectMapper::toDto)
@@ -40,7 +40,7 @@ public class ProjectServiceImpl implements ProjectService{
 
     @Override
     public ProjectResponseDto getByIdAndOwner(Long id, User owner) {
-        var project = projectRepository.findByIdAndOwner(id, owner)
+        var project = projectRepository.findByIdAndOwnerAndArchivedFalse(id, owner)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
 
         return projectMapper.toDto(project);
@@ -48,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService{
 
     @Override
     public ProjectResponseDto update(Long id, User owner, ProjectRequestDto dto) {
-        var project = projectRepository.findByIdAndOwner(id, owner)
+        var project = projectRepository.findByIdAndOwnerAndArchivedFalse(id, owner)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
 
         project.setName(dto.getName());
@@ -61,11 +61,37 @@ public class ProjectServiceImpl implements ProjectService{
 
     @Override
     public void delete(Long id, User owner) {
-        var project = projectRepository.findByIdAndOwner(id, owner)
+        var project = projectRepository.findByIdAndOwnerAndArchivedFalse(id, owner)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
 
         project.setArchived(true);
 
         projectRepository.save(project);
+    }
+
+    @Override
+    public ProjectResponseDto unarchive(Long id, User owner) {
+        var project = projectRepository.findByIdAndOwnerAndArchivedTrue(id, owner)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+
+        project.setArchived(false);
+
+        var savedProject = projectRepository.save(project);
+
+        return projectMapper.toDto(savedProject);
+    }
+
+    @Override
+    public List<ProjectResponseDto> getArchivedByOwner(User owner) {
+        var archivedProjects = projectRepository.findAllArchivedByOwnerId(owner.getId());
+        System.out.println("Archived projects found: " + archivedProjects.size());
+
+        System.out.println("owner.id = " + owner.getId());
+        System.out.println("owner.email = " + owner.getEmail());
+
+
+        return archivedProjects.stream()
+                .map(projectMapper::toDto)
+                .toList();
     }
 }

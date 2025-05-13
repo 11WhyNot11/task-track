@@ -18,4 +18,8 @@ public interface ProjectService {
 
     void delete(Long id, User owner);
 
+    ProjectResponseDto unarchive(Long id, User owner);
+
+    List<ProjectResponseDto> getArchivedByOwner(User owner);
+
 }

@@ -32,15 +32,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new UserAlreadyExistsException(userRequestDto.getEmail());
         }
 
+        String encodedPassword = passwordEncoder.encode(userRequestDto.getPassword());
+
         var user = User.builder()
                 .email(userRequestDto.getEmail())
-                .password(userRequestDto.getPassword())
+                .password(encodedPassword)
                 .firstName(userRequestDto.getFirstName())
                 .lastName(userRequestDto.getLastName())
                 .role(Role.USER)
                 .build();
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
 
@@ -48,9 +48,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponseDto.builder()
                 .token(token)
                 .build();
-
-
     }
+
 
     @Override
     public AuthenticationResponseDto login(AuthenticationRequestDto request) {
