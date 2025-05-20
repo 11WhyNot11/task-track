@@ -20,57 +20,46 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
-    private final UserService userService; // додай цей сервіс через DI
-
-    private User getCurrentUser(UserDetails userDetails) {
-        return userService.findByEmail(userDetails.getUsername());
-    }
 
     @PostMapping
-    public ProjectResponseDto create(@Valid @RequestBody ProjectRequestDto dto, @AuthenticationPrincipal UserDetails userDetails) {
-        User owner = getCurrentUser(userDetails);
-        return projectService.create(dto, owner);
+    public ProjectResponseDto create(@Valid @RequestBody ProjectRequestDto dto,
+                                     @AuthenticationPrincipal User user) {
+        return projectService.create(dto, user);
     }
 
     @GetMapping
-    public List<ProjectResponseDto> getAllByOwner(@AuthenticationPrincipal UserDetails userDetails) {
-        User owner = getCurrentUser(userDetails);
-        return projectService.getAllByOwner(owner);
+    public List<ProjectResponseDto> getAllByOwner(@AuthenticationPrincipal User user) {
+        return projectService.getAllByOwner(user);
     }
 
     @GetMapping("/{id}")
-    public ProjectResponseDto getByIdAndOwner(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User owner = getCurrentUser(userDetails);
-        return projectService.getByIdAndOwner(id, owner);
+    public ProjectResponseDto getByIdAndOwner(@PathVariable Long id,
+                                              @AuthenticationPrincipal User user) {
+        return projectService.getByIdAndOwner(id, user);
     }
 
     @PutMapping("/{id}")
-    public ProjectResponseDto update(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ProjectRequestDto dto) {
-        User owner = getCurrentUser(userDetails);
-        return projectService.update(id, owner, dto);
+    public ProjectResponseDto update(@PathVariable Long id,
+                                     @AuthenticationPrincipal User user,
+                                     @Valid @RequestBody ProjectRequestDto dto) {
+        return projectService.update(id, user, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User owner = getCurrentUser(userDetails);
-        projectService.delete(id, owner);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @AuthenticationPrincipal User user) {
+        projectService.delete(id, user);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("{id}")
-    public ProjectResponseDto unarchive(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User owner = getCurrentUser(userDetails);
-
-        return  projectService.unarchive(id, owner);
-
+    @PatchMapping("/{id}")
+    public ProjectResponseDto unarchive(@PathVariable Long id,
+                                        @AuthenticationPrincipal User user) {
+        return projectService.unarchive(id, user);
     }
 
     @GetMapping("/archived")
-    public List<ProjectResponseDto> getArchivedByOwner(@AuthenticationPrincipal UserDetails userDetails) {
-        var email = userDetails.getUsername();
-        var user = userService.findByEmail(email);
-
-
+    public List<ProjectResponseDto> getArchivedByOwner(@AuthenticationPrincipal User user) {
         return projectService.getArchivedByOwner(user);
     }
 }

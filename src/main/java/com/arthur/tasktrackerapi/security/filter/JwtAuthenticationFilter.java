@@ -1,5 +1,6 @@
 package com.arthur.tasktrackerapi.security.filter;
 
+import com.arthur.tasktrackerapi.security.details.CustomUserDetails;
 import com.arthur.tasktrackerapi.security.service.JwtService;
 import com.arthur.tasktrackerapi.security.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
@@ -28,11 +29,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("PATH: " + request.getServletPath());
-        System.out.println("AUTH BEFORE: " + SecurityContextHolder.getContext().getAuthentication());
-
         final String path = request.getServletPath();
 
+        // Пропускаємо public ендпоінти
         if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
@@ -50,31 +49,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
+            // Завантажуємо UserDetails (обгортка над User)
             var userDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtService.isTokenValid(token, userDetails)) {
 
-                var user = ((UserDetailsServiceImpl) userDetailsService).loadDomainUserByUsername(email);
+                // Дістаємо доменний User з CustomUserDetails
+                var user = ((CustomUserDetails) userDetails).getUser();
 
-                System.out.println("EMAIL: " + user.getEmail());
-                System.out.println("ROLE: " + user.getRole());
-                System.out.println("AUTHORITIES: " + user.getAuthorities());
-                System.out.println("AUTH: " + SecurityContextHolder.getContext().getAuthentication());
-                System.out.println("PATH: " + request.getRequestURI());
+                // Створюємо токен з User як principal
                 var authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        user,
                         null,
                         userDetails.getAuthorities()
                 );
 
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("Setting auth: " + authentication);
             }
         }
 
         filterChain.doFilter(request, response);
     }
+
 
 
 }
