@@ -30,7 +30,4 @@ public class UserRequestDto {
 
     @NotBlank
     private String lastName;
-
-    @NotNull
-    private Role role;
 }
