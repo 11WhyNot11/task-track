@@ -2,13 +2,20 @@ package com.arthur.tasktrackerapi.task.controller;
 
 import com.arthur.tasktrackerapi.task.dto.TaskRequestDto;
 import com.arthur.tasktrackerapi.task.dto.TaskResponseDto;
+import com.arthur.tasktrackerapi.task.dto.filter.TaskFilterRequest;
+import com.arthur.tasktrackerapi.task.entity.Task;
+import com.arthur.tasktrackerapi.task.mapper.TaskMapper;
+import com.arthur.tasktrackerapi.task.repository.TaskRepository;
 import com.arthur.tasktrackerapi.task.service.TaskService;
 import com.arthur.tasktrackerapi.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -17,6 +24,8 @@ import java.util.List;
 @RequestMapping("/api/tasks")
 public class TaskController {
     private final TaskService taskService;
+    private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
 
     @PostMapping
@@ -25,9 +34,12 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(taskDto);
     }
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<TaskResponseDto>> getAllByProjectId(@PathVariable Long projectId,@AuthenticationPrincipal User currentUser) {
-        var tasksDto = taskService.getAllByProjectId(projectId, currentUser);
-        return ResponseEntity.ok(tasksDto);
+    public ResponseEntity<Page<TaskResponseDto>> getAllByProjectId(@PathVariable Long projectId,
+                                                                   @AuthenticationPrincipal User currentUser,
+                                                                   TaskFilterRequest filter,
+                                                                   Pageable pageable) {
+        Page<TaskResponseDto> dtoPage = taskService.getAllByProjectId(projectId, filter, pageable, currentUser);
+        return ResponseEntity.ok(dtoPage);
     }
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponseDto> getById(@PathVariable Long id,@AuthenticationPrincipal User currentUser) {

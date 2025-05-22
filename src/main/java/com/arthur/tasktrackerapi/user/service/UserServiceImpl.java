@@ -4,16 +4,15 @@ import com.arthur.tasktrackerapi.exception.handler.UserNotFoundException;
 import com.arthur.tasktrackerapi.user.dto.UserRequestDto;
 import com.arthur.tasktrackerapi.user.dto.UserResponseDto;
 import com.arthur.tasktrackerapi.user.entity.User;
+import com.arthur.tasktrackerapi.user.dto.filter.UserFilterRequest;
 import com.arthur.tasktrackerapi.user.mapper.UserMapper;
 import com.arthur.tasktrackerapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,12 +40,10 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<UserResponseDto> findAll() {
-        var users = userRepository.findAll();
+    public Page<UserResponseDto> findAll(UserFilterRequest filter, Pageable pageable) {
+        var filtered = userRepository.findAllFiltered(filter, pageable);
 
-        return users.stream()
-                .map(UserMapper::toDto)
-                .toList();
+        return filtered.map(UserMapper::toDto);
     }
 
     @Override

@@ -4,12 +4,15 @@ import com.arthur.tasktrackerapi.exception.handler.ProjectNotFoundException;
 import com.arthur.tasktrackerapi.exception.handler.UserNotFoundException;
 import com.arthur.tasktrackerapi.project.dto.ProjectRequestDto;
 import com.arthur.tasktrackerapi.project.dto.ProjectResponseDto;
+import com.arthur.tasktrackerapi.project.dto.filter.ProjectFilterRequest;
 import com.arthur.tasktrackerapi.project.entity.Project;
 import com.arthur.tasktrackerapi.project.mapper.ProjectMapper;
 import com.arthur.tasktrackerapi.project.repository.ProjectRepository;
 import com.arthur.tasktrackerapi.user.entity.User;
 import com.arthur.tasktrackerapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,12 +33,10 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
-    public List<ProjectResponseDto> getAllByOwner(User owner) {
-        var project = projectRepository.findAllByOwnerAndArchivedFalse(owner);
+    public Page<ProjectResponseDto> getAllByOwner(User owner, ProjectFilterRequest filter, Pageable pageable) {
+        var projects = projectRepository.getAllByOwnerFiltered(owner, filter, pageable);
 
-        return project.stream()
-                .map(projectMapper::toDto)
-                .toList();
+        return projects.map(projectMapper::toDto);
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.arthur.tasktrackerapi.project.repository.ProjectRepository;
 import com.arthur.tasktrackerapi.security.access.AccessValidator;
 import com.arthur.tasktrackerapi.task.dto.TaskRequestDto;
 import com.arthur.tasktrackerapi.task.dto.TaskResponseDto;
+import com.arthur.tasktrackerapi.task.dto.filter.TaskFilterRequest;
 import com.arthur.tasktrackerapi.task.entity.Status;
 import com.arthur.tasktrackerapi.task.entity.Task;
 import com.arthur.tasktrackerapi.task.mapper.TaskMapper;
@@ -16,6 +17,8 @@ import com.arthur.tasktrackerapi.task.repository.TaskRepository;
 import com.arthur.tasktrackerapi.user.entity.User;
 import com.arthur.tasktrackerapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,17 +54,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponseDto> getAllByProjectId(Long projectId, User currentUser) {
+    public Page<TaskResponseDto> getAllByProjectId(Long projectId, TaskFilterRequest filter, Pageable pageable, User currentUser) {
         var project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
         accessValidator.validateAccessToProject(project, currentUser);
 
-        var tasks = taskRepository.findAllByProject_IdAndArchivedFalse(projectId);
-
-        return tasks.stream()
-                .map(taskMapper::toDto)
-                .toList();
+        var page = taskRepository.findAllFiltered(projectId, filter, pageable);
+        return page.map(taskMapper::toDto);
     }
 
     @Override
