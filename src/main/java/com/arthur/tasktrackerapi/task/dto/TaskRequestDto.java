@@ -2,6 +2,7 @@ package com.arthur.tasktrackerapi.task.dto;
 
 import com.arthur.tasktrackerapi.task.entity.Priority;
 import com.arthur.tasktrackerapi.task.entity.Status;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TaskRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Title is required")
     private String title;
 
     private String description;
@@ -26,9 +27,10 @@ public class TaskRequestDto {
 
     private Priority priority;
 
+    @FutureOrPresent(message = "Deadline must be in the future or now")
     private LocalDateTime deadline;
 
-    @NotNull
+    @NotNull(message = "Project ID is required")
     private Long projectId;
 
 }

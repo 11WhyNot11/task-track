@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,9 +26,10 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ProjectResponseDto create(@Valid @RequestBody ProjectRequestDto dto,
+    public ResponseEntity<ProjectResponseDto> create(@Valid @RequestBody ProjectRequestDto dto,
                                      @AuthenticationPrincipal User user) {
-        return projectService.create(dto, user);
+        var responseDto = projectService.create(dto, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping

@@ -8,6 +8,7 @@ import com.arthur.tasktrackerapi.task.mapper.TaskMapper;
 import com.arthur.tasktrackerapi.task.repository.TaskRepository;
 import com.arthur.tasktrackerapi.task.service.TaskService;
 import com.arthur.tasktrackerapi.user.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,8 @@ public class TaskController {
 
 
     @PostMapping
-    public ResponseEntity<TaskResponseDto> create(@RequestBody TaskRequestDto dto,@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<TaskResponseDto> create(@Valid @RequestBody TaskRequestDto dto,
+                                                  @AuthenticationPrincipal User currentUser) {
         var taskDto = taskService.create(dto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(taskDto);
     }
@@ -48,7 +50,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponseDto> update(@RequestBody TaskRequestDto dto,
+    public ResponseEntity<TaskResponseDto> update(@Valid @RequestBody TaskRequestDto dto,
                                                   @PathVariable Long id,
                                                   @AuthenticationPrincipal User currentUser) {
         var updatedDto = taskService.update(dto, id, currentUser);

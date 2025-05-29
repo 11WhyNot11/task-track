@@ -5,6 +5,8 @@ import com.arthur.tasktrackerapi.security.dto.AuthenticationResponseDto;
 import com.arthur.tasktrackerapi.security.service.AuthenticationService;
 import com.arthur.tasktrackerapi.user.dto.UserRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,13 +20,15 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public AuthenticationResponseDto register(@RequestBody UserRequestDto userRequestDto){
-        return authenticationService.register(userRequestDto);
+    public ResponseEntity<AuthenticationResponseDto> register(@RequestBody UserRequestDto userRequestDto){
+        AuthenticationResponseDto response = authenticationService.register(userRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public AuthenticationResponseDto login(@RequestBody AuthenticationRequestDto authenticationRequestDto){
-        return authenticationService.login(authenticationRequestDto);
+    public ResponseEntity<AuthenticationResponseDto> login(@RequestBody AuthenticationRequestDto authenticationRequestDto){
+        var response = authenticationService.login(authenticationRequestDto);
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProjectRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Name is required")
     private String name;
     private String description;
 }

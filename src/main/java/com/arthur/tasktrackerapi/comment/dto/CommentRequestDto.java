@@ -13,9 +13,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CommentRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Content must not be blank")
     private String content;
 
-    @NotNull
-    private Long taskId;
-}
+    @NotNull(message = "Task ID is required")
+    private Long taskId;}

@@ -15,6 +15,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> userNotFoundException(UserNotFoundException exception) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, exception.getMessage());
@@ -26,12 +27,12 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiErrorResponse> invalidCredentialsException(InvalidCredentialsException exception){
+    public ResponseEntity<ApiErrorResponse> invalidCredentialsException(InvalidCredentialsException exception) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, exception.getMessage());
     }
 
     @ExceptionHandler(ProjectNotFoundException.class)
-    public  ResponseEntity<ApiErrorResponse> projectNotFoundException(ProjectNotFoundException exception){
+    public ResponseEntity<ApiErrorResponse> projectNotFoundException(ProjectNotFoundException exception) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
@@ -48,20 +49,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
-
         exception.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage()));
-
         return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException exception) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, exception.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Access denied");
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception exception) {
+    public ResponseEntity<ApiErrorResponse> handleException(Exception ex) {
+        ex.printStackTrace();
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong");
     }
 
@@ -71,9 +71,6 @@ public class GlobalExceptionHandler {
                 status.value(),
                 LocalDateTime.now()
         );
-        return new ResponseEntity<>(error,status);
-
+        return new ResponseEntity<>(error, status);
     }
-
-
 }

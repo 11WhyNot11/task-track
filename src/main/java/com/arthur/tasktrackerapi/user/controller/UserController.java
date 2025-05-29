@@ -3,8 +3,10 @@ package com.arthur.tasktrackerapi.user.controller;
 import com.arthur.tasktrackerapi.user.dto.UserRequestDto;
 import com.arthur.tasktrackerapi.user.dto.UserResponseDto;
 import com.arthur.tasktrackerapi.user.dto.filter.UserFilterRequest;
+import com.arthur.tasktrackerapi.user.entity.User;
 import com.arthur.tasktrackerapi.user.mapper.UserMapper;
 import com.arthur.tasktrackerapi.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +25,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> save(@RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody UserRequestDto userRequestDto) {
         UserResponseDto createdUser = userService.save(userRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -50,9 +52,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public UserResponseDto me(@AuthenticationPrincipal UserDetails userDetails) {
-        var email = userDetails.getUsername();
-        var user = userService.findByEmail(email);
+    public UserResponseDto me(@AuthenticationPrincipal User user) {
         return UserMapper.toDto(user);
     }
 }

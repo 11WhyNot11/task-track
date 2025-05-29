@@ -4,6 +4,7 @@ import com.arthur.tasktrackerapi.comment.dto.CommentRequestDto;
 import com.arthur.tasktrackerapi.comment.dto.CommentResponseDto;
 import com.arthur.tasktrackerapi.comment.service.CommentService;
 import com.arthur.tasktrackerapi.user.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentResponseDto> create(
-            @RequestBody CommentRequestDto dto,
+            @Valid @RequestBody CommentRequestDto dto,
             @AuthenticationPrincipal User author) {
         var comment = commentService.create(dto, author);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
@@ -38,7 +39,7 @@ public class CommentController {
     @PutMapping("/{id}")
     public ResponseEntity<CommentResponseDto> update(
             @PathVariable("id") Long commentId,
-            @RequestBody CommentRequestDto dto,
+            @Valid @RequestBody CommentRequestDto dto,
             @AuthenticationPrincipal User currentUser) {
         var updated = commentService.update(dto, commentId, currentUser);
         return ResponseEntity.ok(updated);

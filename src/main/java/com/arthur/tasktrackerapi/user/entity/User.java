@@ -45,7 +45,6 @@ public class User {
     @OneToMany(mappedBy = "owner")
     private List<Project> projects = new ArrayList<>();
 
-
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
