@@ -40,7 +40,7 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                     Path<Object> path = root.get(order.getProperty());
                     orders.add(order.isAscending() ? cb.asc(path) : cb.desc(path));
                 } catch (IllegalArgumentException e) {
-                    System.out.println("⚠️ Unknown sort field: " + order.getProperty());
+                    System.out.println("Unknown sort field: " + order.getProperty());
                 }
             });
             cq.orderBy(orders);

@@ -1,5 +1,10 @@
 package com.arthur.tasktrackerapi.task.controller;
 
+import com.arthur.tasktrackerapi.audit.dto.TaskAuditDto;
+import com.arthur.tasktrackerapi.audit.service.TaskAuditService;
+import com.arthur.tasktrackerapi.exception.handler.TaskNotFoundException;
+import com.arthur.tasktrackerapi.exception.handler.UserNotFoundException;
+import com.arthur.tasktrackerapi.security.access.AccessValidator;
 import com.arthur.tasktrackerapi.task.dto.TaskRequestDto;
 import com.arthur.tasktrackerapi.task.dto.TaskResponseDto;
 import com.arthur.tasktrackerapi.task.dto.filter.TaskFilterRequest;
@@ -25,8 +30,19 @@ import java.util.List;
 @RequestMapping("/api/tasks")
 public class TaskController {
     private final TaskService taskService;
+    private final TaskAuditService taskAuditService;
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final AccessValidator accessValidator;
+
+    @GetMapping("/{id}/audit")
+    public ResponseEntity<List<TaskAuditDto>> getTaskAudit(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
+        var task = taskRepository.findByIdAndArchivedFalse(id)
+                        .orElseThrow(() -> new TaskNotFoundException(id));
+        accessValidator.validateAccessToTask(task, currentUser);
+
+        return ResponseEntity.ok(taskAuditService.getAuditForTask(id));
+    }
 
 
     @PostMapping
@@ -73,4 +89,5 @@ public class TaskController {
         var archivedByProject = taskService.getArchivedByProject(projectId, currentUser);
         return ResponseEntity.ok(archivedByProject);
     }
+
 }

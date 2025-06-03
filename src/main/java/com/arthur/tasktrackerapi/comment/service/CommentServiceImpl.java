@@ -1,5 +1,7 @@
 package com.arthur.tasktrackerapi.comment.service;
 
+import com.arthur.tasktrackerapi.audit.entity.AuditAction;
+import com.arthur.tasktrackerapi.audit.service.CommentAuditService;
 import com.arthur.tasktrackerapi.comment.dto.CommentRequestDto;
 import com.arthur.tasktrackerapi.comment.dto.CommentResponseDto;
 import com.arthur.tasktrackerapi.comment.entity.Comment;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -26,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final TaskRepository taskRepository;
     private final AccessValidator accessValidator;
+    private final CommentAuditService commentAuditService;
 
     @Override
     public CommentResponseDto create(CommentRequestDto dto, User author) {
@@ -83,7 +87,20 @@ public class CommentServiceImpl implements CommentService {
 
         accessValidator.validateCanModifyComment(comment, currentUser);
 
-        comment.setContent(dto.getContent());
+        var performedBy = currentUser.getEmail();
+
+        if(!Objects.equals(comment.getContent(), dto.getContent())) {
+            log.info("Content changed: '{}' -> '{}'", comment.getContent(), dto.getContent());
+            commentAuditService.saveAuditEntry(
+                    comment.getId(),
+                    AuditAction.UPDATED,
+                    "content",
+                    comment.getContent(),
+                    dto.getContent(),
+                    performedBy
+            );
+            comment.setContent(dto.getContent());
+        }
 
         var updatedComment = commentRepository.save(comment);
 

@@ -14,7 +14,7 @@ public interface TaskService {
     TaskResponseDto create(TaskRequestDto dto, User currentUser);
     Page<TaskResponseDto> getAllByProjectId(Long projectId, TaskFilterRequest filter, Pageable pageable, User currentUser);
     TaskResponseDto getById(Long id, User currentUser);
-    TaskResponseDto update(TaskRequestDto dto, Long id, User currentUser);
+    TaskResponseDto update(TaskRequestDto request, Long taskId, User currentUser);
     void delete(Long id, User currentUser);
     TaskResponseDto unarchive(Long id, User currentUser);
     List<TaskResponseDto> getArchivedByProject(Long projectId, User currentUser);

@@ -1,5 +1,7 @@
 package com.arthur.tasktrackerapi.task.service;
 
+import com.arthur.tasktrackerapi.audit.entity.AuditAction;
+import com.arthur.tasktrackerapi.audit.service.TaskAuditService;
 import com.arthur.tasktrackerapi.exception.handler.ProjectNotFoundException;
 import com.arthur.tasktrackerapi.exception.handler.TaskNotFoundException;
 import com.arthur.tasktrackerapi.exception.handler.UserNotFoundException;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -34,6 +37,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
     private final AccessValidator accessValidator;
+    private final TaskAuditService taskAuditService;
 
     @Override
     public TaskResponseDto create(TaskRequestDto dto, User currentUser) {
@@ -95,31 +99,6 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskResponseDto update(TaskRequestDto dto, Long id, User currentUser) {
-        log.info("Updating task id={} by userId={}", id, currentUser.getId());
-
-        var task = taskRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Task with id={} not found", id);
-                    return new TaskNotFoundException(id);
-                });
-
-        accessValidator.validateAccessToProject(task.getProject(), currentUser);
-
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        task.setStatus(dto.getStatus());
-        task.setPriority(dto.getPriority());
-        task.setDeadline(dto.getDeadline());
-
-        var saved = taskRepository.save(task);
-
-        log.debug("Updated task id={} by userId={}", saved.getId(), currentUser.getId());
-
-        return taskMapper.toDto(saved);
-    }
-
-    @Override
     public void delete(Long id, User currentUser) {
         log.info("Archiving task id={} by userId={}", id, currentUser.getId());
 
@@ -178,4 +157,56 @@ public class TaskServiceImpl implements TaskService {
                 .map(taskMapper::toDto)
                 .toList();
     }
+
+    @Override
+    public TaskResponseDto update(TaskRequestDto request, Long taskId, User currentUser) {
+        log.info("Updating task id={} by userId={}", taskId, currentUser.getId());
+
+        var task = taskRepository.findByIdAndArchivedFalse(taskId)
+                .orElseThrow(() -> {
+                    log.warn("Task with id={} not found", taskId);
+                    return new TaskNotFoundException(taskId);
+                });
+
+        accessValidator.validateAccessToTask(task, currentUser);
+
+        var performedBy = currentUser.getEmail();
+
+        if (!Objects.equals(task.getTitle(), request.getTitle())) {
+            log.info("TITLE CHANGED: '{}' -> '{}'", task.getTitle(), request.getTitle());
+            taskAuditService.saveAuditEntry(
+                    task.getId(),
+                    AuditAction.UPDATED,
+                    "title",
+                    task.getTitle(),
+                    request.getTitle(),
+                    performedBy
+            );
+            task.setTitle(request.getTitle());
+        }
+
+        if (!Objects.equals(task.getDescription(), request.getDescription())) {
+            log.info("DESCRIPTION CHANGED: '{}' -> '{}'", task.getDescription(), request.getDescription());
+            taskAuditService.saveAuditEntry(
+                    task.getId(),
+                    AuditAction.UPDATED,
+                    "description",
+                    task.getDescription(),
+                    request.getDescription(),
+                    performedBy
+            );
+            task.setDescription(request.getDescription());
+        }
+
+        task.setStatus(request.getStatus());
+        task.setPriority(request.getPriority());
+        task.setDeadline(request.getDeadline());
+
+        var updatedTask = taskRepository.save(task);
+
+        log.debug("Updated task id={} by userId={}", updatedTask.getId(), currentUser.getId());
+
+        return taskMapper.toDto(updatedTask);
+    }
+
 }
