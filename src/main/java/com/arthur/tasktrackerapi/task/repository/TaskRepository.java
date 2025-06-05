@@ -11,4 +11,5 @@ public interface TaskRepository extends JpaRepository<Task, Long>, TaskRepositor
     List<Task> findAllByProject_IdAndArchivedTrue(Long projectId);
     Optional<Task> findByIdAndArchivedFalse(Long id);
 
+    Boolean existsTaskByTitleAndProjectId(String title, Long projectId);
 }

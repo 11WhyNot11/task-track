@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/comments/**").authenticated()
                         .requestMatchers("/api/tasks/**").authenticated()
+                        .requestMatchers("/api/tags/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -11,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -32,5 +34,7 @@ public class TaskRequestDto {
 
     @NotNull(message = "Project ID is required")
     private Long projectId;
+
+    private Set<Long> tagIds;
 
 }

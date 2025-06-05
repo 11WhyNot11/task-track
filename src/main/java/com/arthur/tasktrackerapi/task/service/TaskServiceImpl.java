@@ -9,6 +9,8 @@ import com.arthur.tasktrackerapi.project.dto.ProjectResponseDto;
 import com.arthur.tasktrackerapi.project.entity.Project;
 import com.arthur.tasktrackerapi.project.repository.ProjectRepository;
 import com.arthur.tasktrackerapi.security.access.AccessValidator;
+import com.arthur.tasktrackerapi.tag.entity.Tag;
+import com.arthur.tasktrackerapi.tag.repository.TagRepository;
 import com.arthur.tasktrackerapi.task.dto.TaskRequestDto;
 import com.arthur.tasktrackerapi.task.dto.TaskResponseDto;
 import com.arthur.tasktrackerapi.task.dto.filter.TaskFilterRequest;
@@ -24,6 +26,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,6 +42,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskMapper taskMapper;
     private final AccessValidator accessValidator;
     private final TaskAuditService taskAuditService;
+    private final TagRepository tagRepository;
 
     @Override
     public TaskResponseDto create(TaskRequestDto dto, User currentUser) {
@@ -52,10 +57,18 @@ public class TaskServiceImpl implements TaskService {
         accessValidator.validateAccessToProject(project, currentUser);
 
         var task = taskMapper.toEntity(dto, project);
+
+        if(dto.getTagIds() != null) {
+            var tags = tagRepository.findAllById(dto.getTagIds());
+            task.setTags(new HashSet<>(tags));
+        }
         if (task.getStatus() == null) {
             task.setStatus(Status.TODO);
         }
         task.setArchived(false);
+
+        validateDeadline(dto.getDeadline());
+        validateUniqueTaskTitle(dto.getTitle(), dto.getProjectId());
 
         var saved = taskRepository.save(task);
 
@@ -198,15 +211,35 @@ public class TaskServiceImpl implements TaskService {
             task.setDescription(request.getDescription());
         }
 
+        if(request.getTagIds() != null) {
+            var tags = tagRepository.findAllById(request.getTagIds());
+            task.setTags(new HashSet<>(tags));
+        }
+
         task.setStatus(request.getStatus());
         task.setPriority(request.getPriority());
         task.setDeadline(request.getDeadline());
+
+        validateDeadline(request.getDeadline());
+        validateUniqueTaskTitle(request.getTitle(), request.getProjectId());
 
         var updatedTask = taskRepository.save(task);
 
         log.debug("Updated task id={} by userId={}", updatedTask.getId(), currentUser.getId());
 
         return taskMapper.toDto(updatedTask);
+    }
+
+    private void validateDeadline(LocalDateTime deadline) {
+        if(deadline != null && deadline.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Deadline can not be in the past");
+        }
+    }
+
+    private void validateUniqueTaskTitle(String title, Long projectId) {
+        if(taskRepository.existsTaskByTitleAndProjectId(title, projectId)) {
+            throw new IllegalStateException("This title is already used");
+        }
     }
 
 }
