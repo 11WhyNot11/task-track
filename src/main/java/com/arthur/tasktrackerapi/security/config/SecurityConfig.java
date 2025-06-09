@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/me", "/api/users/me/").authenticated()
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/comments/**").authenticated()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/tasks/**").authenticated()
                         .requestMatchers("/api/tags/**").authenticated()
                         .anyRequest().authenticated())

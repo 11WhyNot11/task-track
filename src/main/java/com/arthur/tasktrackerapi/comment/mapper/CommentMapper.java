@@ -19,11 +19,17 @@ public class CommentMapper {
     }
 
     public CommentResponseDto toDto(Comment comment) {
+        String fullUrl = null;
+        if(comment.getAttachmentPath() != null) {
+            fullUrl = "http://localhost:8080" + comment.getAttachmentPath();
+        }
+
         return CommentResponseDto.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .taskId(comment.getTask().getId())
+                .attachmentUrl(fullUrl)
                 .authorId(comment.getAuthor().getId())
                 .authorName(comment.getAuthor().getFirstName() + " " + comment.getAuthor().getLastName())
                 .build();

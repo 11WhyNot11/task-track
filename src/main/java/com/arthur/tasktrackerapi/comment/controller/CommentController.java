@@ -13,6 +13,7 @@ import com.arthur.tasktrackerapi.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +30,9 @@ public class CommentController {
     private final CommentRepository commentRepository;
     private final AccessValidator accessValidator;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommentResponseDto> create(
-            @Valid @RequestBody CommentRequestDto dto,
+            @Valid @ModelAttribute CommentRequestDto dto,
             @AuthenticationPrincipal User author) {
         var comment = commentService.create(dto, author);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);

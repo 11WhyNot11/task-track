@@ -17,8 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -43,10 +49,35 @@ public class CommentServiceImpl implements CommentService {
 
         accessValidator.validateAccessToTask(task, author);
 
+        String attachmentPath = null;
+
+        if(dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
+            try {
+
+                var originalFilename = dto.getAttachment().getOriginalFilename();
+                var uniqueFilename = UUID.randomUUID() + "_" + originalFilename;
+
+                Path uploadDir = Paths.get("uploads");
+
+                if(!Files.exists(uploadDir)) {
+                    Files.createDirectories(uploadDir);
+                }
+
+                Path destination = uploadDir.resolve(uniqueFilename);
+                Files.copy(dto.getAttachment().getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+                attachmentPath = "/uploads/" + uniqueFilename;
+            } catch (IOException e) {
+                log.error("Failed to save attachment", e);
+                throw new RuntimeException("Не вдалося зберегти файл");
+            }
+        }
+
         var comment = Comment.builder()
                 .content(dto.getContent())
                 .task(task)
                 .author(author)
+                .attachmentPath(attachmentPath)
                 .build();
 
         var savedComment = commentRepository.save(comment);
