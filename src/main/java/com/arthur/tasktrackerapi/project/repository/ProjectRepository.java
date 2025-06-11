@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProjectRepository extends JpaRepository<Project, Long> {
+public interface ProjectRepository extends JpaRepository<Project, Long>, ProjectRepositoryCustom {
 
     List<Project> findAllByOwnerAndArchivedFalse(User owner);
     List<Project> findAllByOwnerAndArchivedTrue(User owner);

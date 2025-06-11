@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: tasktracker-postgres
+    environment:
+      POSTGRES_DB: tasktracker
+      POSTGRES_USER: arthur
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: tasktracker-app
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tasktracker
+      SPRING_DATASOURCE_USERNAME: arthur
+      SPRING_DATASOURCE_PASSWORD: secret
+    command: ["java", "-jar", "build/libs/task-tracker-api-0.0.1-SNAPSHOT.jar"]
+
+volumes:
+  pgdata:

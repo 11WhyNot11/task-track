@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @AllArgsConstructor
@@ -13,9 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CommentRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Content must not be blank")
     private String content;
 
-    @NotNull
+    @NotNull(message = "Task ID is required")
     private Long taskId;
+
+    private MultipartFile attachment;
 }

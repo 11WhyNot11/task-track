@@ -2,11 +2,15 @@ package com.arthur.tasktrackerapi.project.controller;
 
 import com.arthur.tasktrackerapi.project.dto.ProjectRequestDto;
 import com.arthur.tasktrackerapi.project.dto.ProjectResponseDto;
+import com.arthur.tasktrackerapi.project.dto.filter.ProjectFilterRequest;
 import com.arthur.tasktrackerapi.project.service.ProjectService;
 import com.arthur.tasktrackerapi.user.entity.User;
 import com.arthur.tasktrackerapi.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,14 +26,17 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ProjectResponseDto create(@Valid @RequestBody ProjectRequestDto dto,
+    public ResponseEntity<ProjectResponseDto> create(@Valid @RequestBody ProjectRequestDto dto,
                                      @AuthenticationPrincipal User user) {
-        return projectService.create(dto, user);
+        var responseDto = projectService.create(dto, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping
-    public List<ProjectResponseDto> getAllByOwner(@AuthenticationPrincipal User user) {
-        return projectService.getAllByOwner(user);
+    public Page<ProjectResponseDto> getAllByOwner(@AuthenticationPrincipal User user,
+                                                  @ModelAttribute ProjectFilterRequest filter,
+                                                  Pageable pageable) {
+        return projectService.getAllByOwner(user, filter, pageable);
     }
 
     @GetMapping("/{id}")

@@ -25,6 +25,8 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
+    private String attachmentPath;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private Task task;
